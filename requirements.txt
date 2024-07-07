@@ -2,3 +2,4 @@ flet
 rvc-python
 edge-tts
 google-generativeai
+pygame
