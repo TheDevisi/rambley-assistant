@@ -1,1 +1,5 @@
-{ "is_first_startup": false, "user_api_token": "" }
+{
+    "username": "",
+    "token": "",
+    "is_first_startup": true
+}
