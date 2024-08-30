@@ -1,18 +1,19 @@
 from tools.try_import import tryImport
-from voicegen.rambley_speech import VoiceGeneration
-tryImport()  # Import necessary libraries
+tryImport()  # Import necessary libraries. yeah i just made a function which downloads shit, because some peoples CAN'T READ 
+# INSTRUCTION AND FOLLOW IT
 
-import os, json, asyncio, time, subprocess
-import google.generativeai as genai
-import flet as ft
-import pygame
-import edge_tts
-import rvc_python
+import os, json, asyncio, time, subprocess # idk what to write about this
+import google.generativeai as genai # Requests to google's ai (Gemini)
+import flet as ft # Flet, shit for GUI
+import pygame # i using this shit to play audio, >_<
+import edge_tts # TTS
+import rvc_python # RVC
+from voicegen.text_to_speech import speechGeneration # Module to generate voice
 
-# Проверяем существование и читаем настройки из файла settings.json
+# Check existing of file and reading settings from it
 if os.path.exists("settings.json") and os.path.getsize("settings.json") > 0:
     with open("settings.json", "r") as f:
-        data = json.load(f)
+        data = json.load(f)   
         token = data["token"]
         is_first_startup = data["is_first_startup"]
         username = data["username"]
@@ -31,7 +32,8 @@ generation_config = {
 }
 
 
-# Text generation settings
+# Text generation settings (i just disabled all safety things, cause it may crash rambley xD )
+# TODO: oh, yeah,  maybe i need to fix prompt?
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
@@ -91,7 +93,10 @@ class ChatMessage(ft.Row):
             ),
         ]
 
+    
     def get_initials(self, user_name: str):
+        """I use arch btw and this function
+        to get first letter of user's name"""
         return user_name[:1].capitalize()
 
     def get_avatar_color(self, user_name: str):
@@ -135,11 +140,13 @@ def main(page: ft.Page):
             page.pubsub.send_all(Message(user_name=join_user_name.value, text=f"{join_user_name.value} has joined the chat.", message_type="login_message"))
             page.update()
 
-            # Сохранение настроек
+            # Saving settings (idk but without, it doesent work :()
             write_info(None)
 
+    # processes when user sends message
     def send_message_click(e):
         if new_message.value != "":
+            pygame.mixer.quit()  # Stop and quit the mixer before re-initialization
             pygame.mixer.init()
             pygame.mixer.music.stop()
 
@@ -163,10 +170,6 @@ def main(page: ft.Page):
             chat.controls.pop()
             page.update()
 
-            # Writing into answer.txt (THIS HECK SHOULD BE CHANGED ASAP)
-            with open("voicegen/answer.txt", "w") as file:
-                file.write(ai_response)
-
             # Show message about voice generation
             generating_message = ft.Row(
                 controls=[
@@ -178,15 +181,18 @@ def main(page: ft.Page):
             page.pubsub.send_all(Message(user_name="Rambley", text="Generating voice...", message_type="generating_message"))
 
             # Starting voice generation
-            #subprocess.run(["python3", "voicegen/tts-rvc.py"])
-            VoiceGeneration(ai_response)
+            speechGeneration(ai_response)
+            time.sleep(2) # idk why i even need this
+            
+            
             # Remove voice generation message
             chat.controls.pop()
+
             page.update()
             page.pubsub.send_all(Message("Rambley", ai_response, message_type="chat_message"))
 
             pygame.mixer.init()
-            sound_file = "voicegen/Rambley.wav"
+            sound_file = "voicegen/Rambley.wav"  # Change to correct file
             pygame.mixer.music.load(sound_file)
             pygame.mixer.music.play()
             new_message.value = ""
@@ -194,8 +200,9 @@ def main(page: ft.Page):
             page.update()
 
             while pygame.mixer.music.get_busy():
-                time.sleep(0.1)  # Delay with low cpu usage
+                time.sleep(0.3)  # Delay  for low CPU usage
 
+    # Idk UwU
     def on_message(message: Message):
         if message.message_type == "chat_message":
             m = ChatMessage(message)
@@ -212,17 +219,18 @@ def main(page: ft.Page):
         chat.controls.append(m)
         page.update()
 
+    # just writing info about user (NO TELEMETRY??? :(( - Microsoft)
     def write_info(e):
         username = join_user_name.value
         token = get_user_api.value
         is_first_startup = False
         user_info = {
-            "username": username,  # Используем значение переменной `username`
-            "token": token,        # Используем значение переменной `token`
+            "username": username,  # using value of variable "username"
+            "token": token,        # using value of variable "token"
             "is_first_startup": is_first_startup,
         }
 
-        with open('settings.json', 'w') as f:  # Используем режим 'w' для записи
+        with open('settings.json', 'w') as f:  # Some shit to write
             json.dump(user_info, f, indent=4)
     genai.configure(api_key=token)  # Initialize the model with the API token
 
@@ -245,13 +253,13 @@ def main(page: ft.Page):
 
             actions=[ft.ElevatedButton(text="Done!", on_click=join_chat_click)],
         )
-
+    # chat, obvious
     chat = ft.ListView(
         expand=True,
         spacing=10,
         auto_scroll=True,
     )
-
+    # settings for message field
     new_message = ft.TextField(
         hint_text="Write a message...",
         autofocus=True,
@@ -265,6 +273,7 @@ def main(page: ft.Page):
         border_color=ft.colors.BLUE
     )
 
+    # adding all elements to page
     page.add(
         ft.Container(
             content=chat,

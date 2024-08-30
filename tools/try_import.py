@@ -1,8 +1,10 @@
+import os # without this shit we just can't install requirements
+
 def tryImport():
     try: 
         import flet as ft
         print("Successfully imported flet")
-    except ImportError:
+    except:
         print("Failed to import flet, installing it now...")
         os.system("pip install flet")
         import flet as ft
@@ -12,7 +14,7 @@ def tryImport():
         import google.generativeai as genai
         print("Successfully imported google.generativeai")
 
-    except ImportError:
+    except:
         print("Failed to import google.generativeai, installing it now...")
         os.system("pip install google-generativeai")
         import google.generativeai as genai
@@ -21,21 +23,21 @@ def tryImport():
         import pygame
         print("Successfully imported pygame")
 
-    except ImportError:
+    except:
         print("Failed to import pygame, installing it now...")
         os.system("pip install pygame")
         import pygame
     try:
         import edge_tts
         print("Successfully imported edge_tts")
-    except ImportError:
+    except:
         print("Failed to import edge_tts, installing it now...")
         os.system("pip install edge-tts")
         import edge_tts
     try:
-        from rvc_python.infer import infer_file, infer_files
+        import rvc_python
 
-    except ImportError:
+    except:
         os.system("pip install rvc-python")
         os.system("pip install tensorboardX")
-        from rvc_python.infer import infer_file, infer_files
+        import rvc_python
